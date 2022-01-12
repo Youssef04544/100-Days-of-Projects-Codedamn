@@ -53,15 +53,32 @@ let countdown = 50;
 let quizzDone = false;
 let highscores = [];
 
-leaderboardToggle.addEventListener("click", () =>
-  highscoresPanel.classList.remove("hide")
-);
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("highscoresTable")) {
+    highscores = JSON.parse(localStorage.getItem("highscoresTable"));
+  }
+});
+
+leaderboardToggle.addEventListener("click", () => {
+  highscoresList.innerHTML = "";
+  highscores.forEach((highscore) => {
+    const listItem = document.createElement("li");
+    listItem.innerText = highscore[0] + highscore[1];
+    highscoresList.appendChild(listItem);
+  });
+  highscoresPanel.classList.remove("hide");
+});
 closeHighscoresBtn.addEventListener("click", () =>
   highscoresPanel.classList.add("hide")
 );
 
 startButton.addEventListener("click", startQuizz);
 submitBtn.addEventListener("click", submitFinish);
+clearBtn.addEventListener("click", () => {
+  localStorage.removeItem("highscoresTable");
+  highscores = [];
+  highscoresList.innerHTML = "";
+});
 function timer() {
   countdown = 50;
   quizzDone = false;
@@ -102,14 +119,14 @@ function selectAnswer(e) {
     questionCounter++;
     showQuestion();
     currentQuestionZone.appendChild(document.createElement("hr"));
-    if (e.target.innerText === questions[questionCounter - 1].answer) {
-      addInfo("Correct !");
-    } else {
-      addInfo("Incorrect !");
-      countdown -= 10;
-    }
   } else {
     finishQuizz();
+  }
+  if (e.target.innerText === questions[questionCounter - 1].answer) {
+    addInfo("Correct !");
+  } else {
+    addInfo("Incorrect !");
+    countdown -= 10;
   }
 }
 
@@ -133,17 +150,24 @@ function submitFinish(e) {
   let userInitials = document.getElementById("userInitials").value;
   highscores.push([`${userInitials} - `, countdown]);
   highscores.sort((a, b) => {
-    if (a[1] > b[1]) return 1;
-    if (a[1] < b[1]) return -1;
+    if (a[1] > b[1]) return -1;
+    if (a[1] < b[1]) return 1;
     else return 0;
   });
+
+  localStorage.setItem("highscoresTable", JSON.stringify(highscores));
   console.log(highscores);
+  console.log(
+    "scores from localstorage: " +
+      JSON.parse(localStorage.getItem("highscoresTable"))
+  );
   scoresheet.classList.add("hide");
   startCard.classList.remove("hide");
 }
 
+//fix last wrong answer doesnt deduct points
 //localstoring of the highscores and initials
 //Setting up the display of highscores onClick---------
 //setting up the submit funct to put you back on the start menuus-------
-//fix bug where you restart the app and you get wrong display of questions
+//fix bug where you restart the app and you get wrong display of questions----------
 //also noticed one bug where at then end on score display it showed two scores ???--------
